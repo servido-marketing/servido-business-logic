@@ -7,7 +7,7 @@ applies_to: [web]
 tags: [orders, provider, services, application, assignment, manager, providers_with_services]
 supersedes: []
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-10-10
 ---
 ## Rule
 A provider (SP) sees the SAME list of global services the manager sees in the manager
@@ -36,6 +36,11 @@ writes via `providersByService`/`updateProvidersToServiceAssignment`) get create
   - Reject: marks the application `status: 'rejected'`, does not touch `providers_with_services`.
   - Once resolved (accepted/rejected) an application leaves the pending list; a rejected
     provider MAY apply again later (rejection does not permanently block re-application).
+
+- **Finnish copy**: the Apply button reads **"Hae"** (the status label for the pending state is
+  "Haettu", already in use; "Aktiivinen" for active). The provider-application button MUST NOT
+  reuse the promo-code "Käytä" ("use/redeem"), which means redeeming something, not requesting to
+  join a service. The two UIs use separate l10n keys (`applyToService` vs. promo `apply`).
 
 ## Rationale
 Manager-curated service assignment (already the case via `assignProvider`'s provider-picker)
@@ -69,7 +74,9 @@ the existing trust model where only a manager can create a `providers_with_servi
   provider identity, with Accept/Reject buttons wired to `resolveServiceApplication`.
 
 ## Verification
-- A provider who has never applied to a service sees an Apply button and no status label.
+- A provider who has never applied to a service sees an Apply button and no status label; in the
+  Finnish locale the button text is "Hae" and never "Käytä"; the promo-code apply button still
+  reads "Käytä".
 - Clicking Apply creates a `pending` `service_applications` doc, does NOT create a
   `providers_with_services` row, and the provider's list now shows "Applied" (no Apply button).
 - The provider CANNOT edit/delete/preview details of any service in this module — only status +
