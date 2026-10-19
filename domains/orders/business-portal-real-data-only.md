@@ -7,7 +7,7 @@ applies_to: [web]
 tags: [orders, business-customer, portal, panel, reports, dashboard, properties, invoices, messages, help, company]
 supersedes: []
 created: 2026-10-17
-updated: 2026-10-18
+updated: 2026-10-19
 ---
 ## Rule
 Every number, column and filter in the Business portal (dashboard, orders and jobs, properties,
@@ -30,9 +30,21 @@ omitting them.
   calls `bookMarketplaceService` then `scheduleTask` (one order per property), with no payment
   step; orders stay unpaid until payment is initiated (payment and credit redemption are a
   follow-up). Success shows a success toast and navigates to Orders and jobs.
-- The timing card has an optional date and an optional time (time requires a date). No date and
-  time is a flexible schedule; date only is the picked day with morning, afternoon or evening
-  slots; date and time is the exact time slot. The same schedule applies to every property order.
+- The timing card has an optional date and a preferred time of day. Empty date is as soon as
+  possible; a set date is the requested day. Time of day is a single choice: Any time (default),
+  Morning, Afternoon, Evening, or Exact time (exact time requires a date and is not offered
+  without one). Labels show the product's buckets (morning 8-12, afternoon 12-17, evening 17-21).
+  The schedule sent per property order: no date + Any time = `FlexibleSchedule` with no range
+  and no day times; no date + a bucket = `FlexibleSchedule` with `dayTimes` = [that bucket]; date
+  + Any time = `PickedSchedule` with that day and all three buckets; date + a bucket =
+  `PickedSchedule` with that day and one `dayTime` slot; date + Exact time = `PickedSchedule`
+  with one `exactTime` slot (`orders-booking-exact-time-selection`). The value lives only in the
+  `TaskScheduled` event schedule written by `scheduleTask`; no field is added to the task
+  document or the schedule schema. A from-to time window and a date range are not offered: a
+  slot carries one `dayTime` or one `exactTime` and no end time, and `PreciseSchedule` is the
+  whole-hour duration booking. The summary Timing row reads "{date or As soon as possible} .
+  {time of day}" and omits the time-of-day part for Any time. The same schedule applies to
+  every property order. Recurring is not offered.
 - Invoices has no backend (no invoice entity) and shows only a title and an empty card "No invoices". It MUST NOT show KPIs, a table, receipts, paid/unpaid status, Pay or Download controls, and MUST NOT use `paidAt` or `getCustomerReceipt`.
 - Messages are the existing per-order chat between the customer and the assigned SP
   (`communication/{taskId}`, send by `sendTaskMessage`, read marker by `markTaskChatReadCustomer`).
@@ -58,7 +70,10 @@ omitting them.
 With a business customer who has no houses and no tasks, every list shows an empty state, every
 KPI shows 0 or is absent, and no screen contains a cost center, PO number, access instructions, invoice
 amount, proof-photo or export control. Selecting 2 properties and pressing Place order creates 2
-orders with the same schedule and opens Orders and jobs.
+orders with the same schedule and opens Orders and jobs. With no date and Morning selected,
+the placed order's schedule is a `FlexibleSchedule` with `dayTimes` [morning] and the SP panel
+shows Morning; with a date and Afternoon, it is a `PickedSchedule` with one afternoon slot;
+Exact time is unavailable until a date is set.
 
 Invoices always shows only "No invoices", whatever orders exist, with no KPI, table or Download. Users and permissions shows one row (the logged-in user, Owner, Active) and no invite or manage control. Messages for a business customer
 with no assigned-provider orders shows an empty state and no support thread.
