@@ -45,6 +45,22 @@ omitting them.
   whole-hour duration booking. The summary Timing row reads "{date or As soon as possible} .
   {time of day}" and omits the time-of-day part for Any time. The same schedule applies to
   every property order. Recurring is not offered.
+- Order details (opened by selecting a row in Orders and jobs) is read-only, follows the Order detail
+  design, and shows only what the `customer_tasks` projection carries: back link to Orders and jobs,
+  service title and status pill, subtitle "Order {number} . {property name, address} . Ordered {date}",
+  a three-step progress (Ordered at `createdAt`, Confirmed at the planned time, Completed at the
+  completion time; only reached steps carry a date), Schedule (date and time of day from the requested
+  schedule, expected duration of the service when it has one), Service (icon, name, description, chosen
+  options and additional work), the customer's note (details text), assigned provider names, activity
+  rows derived from order, planned and completion times, the customer's own feedback, and a pinned side
+  column with status, key facts (when, property, provider) and price (service price, additional work
+  with customer prices, total = the price shown in the Orders list). Sections with no data are omitted,
+  not shown as placeholders. It MUST NOT show: provider reward or deductions, provider contact, rating,
+  company or job count, customer contact data, who placed the order, access instructions, cost
+  center or PO, VAT or incl.-VAT amounts, discount, invoice terms or an Invoiced step, an In progress
+  step or "started" times, proof or before/after photos (task #618), guidelines, manager notes, a maps
+  link, or any control that changes the order or opens chat (Message provider, Reschedule, Cancel). If
+  the order is no longer in the customer's task list, the view shows an empty state with a way back.
 - Invoices has no backend (no invoice entity) and shows only a title and an empty card "No invoices". It MUST NOT show KPIs, a table, receipts, paid/unpaid status, Pay or Download controls, and MUST NOT use `paidAt` or `getCustomerReceipt`.
 - Messages are the existing per-order chat between the customer and the assigned SP
   (`communication/{taskId}`, send by `sendTaskMessage`, read marker by `markTaskChatReadCustomer`).
@@ -77,3 +93,5 @@ Exact time is unavailable until a date is set.
 
 Invoices always shows only "No invoices", whatever orders exist, with no KPI, table or Download. Users and permissions shows one row (the logged-in user, Owner, Active) and no invite or manage control. Messages for a business customer
 with no assigned-provider orders shows an empty state and no support thread.
+
+With one order opened from Orders and jobs, Order details shows no reward, provider contact, photo, edit, cancel, reschedule, message or pay control and no VAT, cost center, PO, access instructions or Invoiced step, and an order whose data has no details text, duration, additional work, planned or completion time or feedback omits those parts instead of showing placeholders.
