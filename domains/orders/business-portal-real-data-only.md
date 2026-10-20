@@ -13,8 +13,8 @@ updated: 2026-10-19
 Every number, column and filter in the Business portal (dashboard, orders and jobs, properties,
 reports, order a service) MUST be computed from data the business customer already owns:
 their `customer_tasks` projection, their `customers/{uid}.houses` and the public `services`
-catalogue. A designed element with no backing field (invoicing, cost center, approvals, proof
-photos, exports, scheduled reports, multi-user permissions beyond the single Owner row, PO number, access instructions) MUST be left out until the backend
+catalogue. A designed element with no backing field (invoicing, cost center, approvals,
+exports, scheduled reports, multi-user permissions beyond the single Owner row, PO number, access instructions) MUST be left out until the backend
 exists; it MUST NOT be rendered with placeholder, zero or invented values.
 
 ## Rationale
@@ -52,15 +52,16 @@ omitting them.
   completion time; only reached steps carry a date), Schedule (date and time of day from the requested
   schedule, expected duration of the service when it has one), Service (icon, name, description, chosen
   options and additional work), the customer's note (details text), assigned provider names, activity
-  rows derived from order, planned and completion times, the customer's own feedback, and a pinned side
+  rows derived from order, planned and completion times, the customer's own feedback, a read-only Proof of work card (below), and a pinned side
   column with status, key facts (when, property, provider) and price (service price, additional work
   with customer prices, total = the price shown in the Orders list). Sections with no data are omitted,
   not shown as placeholders. It MUST NOT show: provider reward or deductions, provider contact, rating,
   company or job count, customer contact data, who placed the order, access instructions, cost
   center or PO, VAT or incl.-VAT amounts, discount, invoice terms or an Invoiced step, an In progress
-  step or "started" times, proof or before/after photos (task #618), guidelines, manager notes, a maps
+  step or "started" times, Before/After labels on photos, a photo upload or delete control, guidelines, manager notes, a maps
   link, or any control that changes the order or opens chat (Message provider, Reschedule, Cancel). If
   the order is no longer in the customer's task list, the view shows an empty state with a way back.
+- Proof of work (task #618): the SP panel completion step uploads photos through `addTaskMedia` (`tasks-provider-photos-at-completion`); `deriveCustomerState` appends every `TaskMediaAdded` media (any `fromRole`) to `customer_tasks.media`, which `TaskPreview.media` already carries. The card shows the `PhotoMetadata` items of `TaskPreview.media` in event order, read-only, between the provider section and Activity, with title "Proof of work" and "{count} photos". Videos and documents are not shown. The data has no before/after marker (`TaskMediaAdded` carries only `fromRole` and `media`; `TaskDone.evidencePhotos` is never written) and photos carry no upload time, so tiles are NOT labelled Before/After, no "uploaded {date}" is shown and the design's dashed "More on completion" tile is omitted. No backend, schema or projection change; no field is added to the task document. The business portal has no media upload, so every photo in `media` came from the SP panel or manager panel.
 - Invoices has no backend (no invoice entity) and shows only a title and an empty card "No invoices". It MUST NOT show KPIs, a table, receipts, paid/unpaid status, Pay or Download controls, and MUST NOT use `paidAt` or `getCustomerReceipt`.
 - Messages are the existing per-order chat between the customer and the assigned SP
   (`communication/{taskId}`, send by `sendTaskMessage`, read marker by `markTaskChatReadCustomer`).
@@ -85,7 +86,7 @@ omitting them.
 ## Verification
 With a business customer who has no houses and no tasks, every list shows an empty state, every
 KPI shows 0 or is absent, and no screen contains a cost center, PO number, access instructions, invoice
-amount, proof-photo or export control. Selecting 2 properties and pressing Place order creates 2
+amount or export control. Selecting 2 properties and pressing Place order creates 2
 orders with the same schedule and opens Orders and jobs. With no date and Morning selected,
 the placed order's schedule is a `FlexibleSchedule` with `dayTimes` [morning] and the SP panel
 shows Morning; with a date and Afternoon, it is a `PickedSchedule` with one afternoon slot;
@@ -94,4 +95,4 @@ Exact time is unavailable until a date is set.
 Invoices always shows only "No invoices", whatever orders exist, with no KPI, table or Download. Users and permissions shows one row (the logged-in user, Owner, Active) and no invite or manage control. Messages for a business customer
 with no assigned-provider orders shows an empty state and no support thread.
 
-With one order opened from Orders and jobs, Order details shows no reward, provider contact, photo, edit, cancel, reschedule, message or pay control and no VAT, cost center, PO, access instructions or Invoiced step, and an order whose data has no details text, duration, additional work, planned or completion time or feedback omits those parts instead of showing placeholders.
+With one order opened from Orders and jobs, Order details shows no reward, provider contact, photo upload or delete control, edit, cancel, reschedule, message or pay control and no VAT, cost center, PO, access instructions or Invoiced step, and an order whose data has no details text, duration, additional work, planned or completion time or feedback omits those parts instead of showing placeholders. An order whose `media` holds photos shows one Proof of work card with a tile per photo and "{count} photos"; tapping a tile opens the existing attachment gallery viewer; an order with no photos shows no card, no empty tile and no "More on completion" tile.
